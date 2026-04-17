@@ -117,9 +117,11 @@ else:
 AUTH_USER_MODEL = 'accounts.User'
 
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOWED_ORIGINS = [
-    o.strip() for o in os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:8080').split(',') if o.strip()
+# Also ensure CSRF allows the Railway domain
+CSRF_TRUSTED_ORIGINS = [
+    origin for origin in os.getenv('CSRF_TRUSTED_ORIGINS', 'https://outify-backend-production.up.railway.app').split(',') if origin
 ]
 
 REST_FRAMEWORK = {
