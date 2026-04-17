@@ -90,12 +90,29 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 import dj_database_url
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=f"mysql://{os.getenv('MYSQLUSER', os.getenv('DB_USER', 'root'))}:{os.getenv('MYSQLPASSWORD', os.getenv('DB_PASSWORD', 'secret'))}@{os.getenv('MYSQLHOST', os.getenv('DB_HOST', 'localhost'))}:{os.getenv('MYSQLPORT', os.getenv('DB_PORT', '3306'))}/{os.getenv('MYSQLDATABASE', os.getenv('DB_NAME', 'outing_management'))}",
-        conn_max_age=600,
-    )
-}
+# Force TCP connection by using the Railway provided URL if available
+# This avoids the "socket" error by ensuring a host is always provided.
+db_url = os.getenv('DATABASE_URL') or os.getenv('MYSQL_URL')
+
+if db_url:
+    DATABASES = {
+        'default': dj_database_url.config(default=db_url, conn_max_age=600)
+    }
+else:
+    # Fallback to individual variables if no URL is found
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.getenv('MYSQLDATABASE', 'outing_management'),
+            'USER': os.getenv('MYSQLUSER', 'root'),
+            'PASSWORD': os.getenv('MYSQLPASSWORD', 'secret'),
+            'HOST': os.getenv('MYSQLHOST', '127.0.0.1'),
+            'PORT': os.getenv('MYSQLPORT', '3306'),
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
+        }
+    }
 
 AUTH_USER_MODEL = 'accounts.User'
 
