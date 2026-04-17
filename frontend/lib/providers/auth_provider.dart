@@ -32,7 +32,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       print('DEBUG: Attempting login for $email');
-      final res = await ApiService.dio.post('/auth/login', data: {'email': email, 'password': password});
+      final res = await ApiService.dio.post('auth/login/', data: {'email': email, 'password': password});
       print('DEBUG: Login response received: ${res.statusCode}');
       final data = res.data as Map<String, dynamic>;
       final user = AppUser.fromJson(data['user'] as Map<String, dynamic>);
@@ -64,7 +64,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> registerStudent({required String name, required String email, required String password, String? collegeId, String? department, String? gender}) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final res = await ApiService.dio.post('/auth/register', data: {
+      final res = await ApiService.dio.post('auth/register/', data: {
         'name': name,
         'email': email,
         'password': password,
@@ -98,7 +98,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (roomNumber != null) data['room_number'] = roomNumber;
       if (gender != null) data['gender'] = gender;
       
-      final res = await ApiService.dio.patch('/auth/me', data: data);
+      final res = await ApiService.dio.patch('auth/me/', data: data);
       final user = AppUser.fromJson(res.data as Map<String, dynamic>);
       
       // Update local storage to persist the updated user.

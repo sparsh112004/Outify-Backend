@@ -15,10 +15,10 @@ from accounts.views import (
 )
 
 urlpatterns = [
-    path('auth/register', RegisterView.as_view(), name='register'),
-    path('auth/login', LoginView.as_view(), name='login'),
-    path('auth/fcm-token', FcmTokenView.as_view(), name='fcm-token'),
-    path('auth/me', MeView.as_view(), name='me'),
+    path('auth/register/', RegisterView.as_view(), name='register'),
+    path('auth/login/', LoginView.as_view(), name='login'),
+    path('auth/fcm-token/', FcmTokenView.as_view(), name='fcm-token'),
+    path('auth/me/', MeView.as_view(), name='me'),
     path('users/faculties', FacultyListView.as_view(), name='faculty-list'),
     path('admin/users', AdminUserListView.as_view(), name='admin-user-list'),
     path('admin/users/create', AdminCreateUserView.as_view(), name='admin-user-create'),
