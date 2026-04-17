@@ -88,15 +88,13 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'HOST': os.getenv('MYSQLHOST', os.getenv('DB_HOST', 'localhost')),
-        'PORT': os.getenv('MYSQLPORT', os.getenv('DB_PORT', '3306')),
-        'NAME': os.getenv('MYSQLDATABASE', os.getenv('DB_NAME', 'outing_management')),
-        'USER': os.getenv('MYSQLUSER', os.getenv('DB_USER', 'root')),
-        'PASSWORD': os.getenv('MYSQLPASSWORD', os.getenv('DB_PASSWORD', 'secret')),
-    }
+    'default': dj_database_url.config(
+        default=f"mysql://{os.getenv('MYSQLUSER', os.getenv('DB_USER', 'root'))}:{os.getenv('MYSQLPASSWORD', os.getenv('DB_PASSWORD', 'secret'))}@{os.getenv('MYSQLHOST', os.getenv('DB_HOST', 'localhost'))}:{os.getenv('MYSQLPORT', os.getenv('DB_PORT', '3306'))}/{os.getenv('MYSQLDATABASE', os.getenv('DB_NAME', 'outing_management'))}",
+        conn_max_age=600,
+    )
 }
 
 AUTH_USER_MODEL = 'accounts.User'
