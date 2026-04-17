@@ -119,9 +119,27 @@ AUTH_USER_MODEL = 'accounts.User'
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# Also ensure CSRF allows the Railway domain
+# Explicitly allow localhost origins for Flutter Web development
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:\d+$",
+]
+
 CSRF_TRUSTED_ORIGINS = [
-    origin for origin in os.getenv('CSRF_TRUSTED_ORIGINS', 'https://outify-backend-production.up.railway.app').split(',') if origin
+    'https://outify-backend-production.up.railway.app',
+    'http://localhost:57764',
+    'http://127.0.0.1:57764',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
 ]
 
 REST_FRAMEWORK = {
