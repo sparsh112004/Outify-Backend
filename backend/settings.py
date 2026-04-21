@@ -103,11 +103,11 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.getenv('MYSQLDATABASE', 'outing_management'),
-            'USER': os.getenv('MYSQLUSER', 'root'),
-            'PASSWORD': os.getenv('MYSQLPASSWORD', 'secret'),
-            'HOST': os.getenv('MYSQLHOST', '127.0.0.1'),
-            'PORT': os.getenv('MYSQLPORT', '3306'),
+            'NAME': os.getenv('MYSQLDATABASE', os.getenv('DB_NAME', 'outing_management')),
+            'USER': os.getenv('MYSQLUSER', os.getenv('DB_USER', 'root')),
+            'PASSWORD': os.getenv('MYSQLPASSWORD', os.getenv('DB_PASSWORD', 'secret')),
+            'HOST': os.getenv('MYSQLHOST', os.getenv('DB_HOST', '127.0.0.1')),
+            'PORT': os.getenv('MYSQLPORT', os.getenv('DB_PORT', '3306')),
             'OPTIONS': {
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             },

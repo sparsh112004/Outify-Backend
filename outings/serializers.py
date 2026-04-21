@@ -104,7 +104,7 @@ class OutingRequestDetailSerializer(serializers.ModelSerializer):
             'college_id': s.college_id,
             'room_number': s.room_number,
             'parent_email': s.parent_email,
-            'profile_pic_url': s.profile_pic_url,
+            'profile_pic': s.profile_pic.url if s.profile_pic else None,
         }
 
 
