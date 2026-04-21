@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../models/outing_request.dart';
@@ -19,6 +20,36 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
   final _departmentController = TextEditingController();
   final _roomNumberController = TextEditingController();
   String? _selectedGender;
+  bool _isUploading = false;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+    );
+
+    if (image != null) {
+      if (!mounted) return;
+      setState(() => _isUploading = true);
+      try {
+        await ref.read(authProvider.notifier).updateProfile(profileImage: image);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile picture updated!')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Upload failed: $e')),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isUploading = false);
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -93,12 +124,37 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      CircleAvatar(
-                        radius: 40,
-                        backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
-                        child: Text(
-                          user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
-                          style: TextStyle(fontSize: 32, color: Theme.of(context).primaryColor),
+                      Center(
+                        child: Stack(
+                          alignment: Alignment.bottomRight,
+                          children: [
+                            CircleAvatar(
+                              radius: 50,
+                              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                              backgroundImage: user.profilePicUrl != null ? NetworkImage(user.profilePicUrl!) : null,
+                              child: (user.profilePicUrl == null && !_isUploading)
+                                  ? Text(
+                                      user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
+                                      style: TextStyle(fontSize: 40, color: Theme.of(context).primaryColor),
+                                    )
+                                  : _isUploading
+                                      ? const CircularProgressIndicator()
+                                      : null,
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
+                                shape: BoxShape.circle,
+                              ),
+                              child: IconButton(
+                                onPressed: _isUploading ? null : _pickImage,
+                                icon: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
+                                constraints: const BoxConstraints(),
+                                padding: const EdgeInsets.all(8),
+                                tooltip: 'Change Profile Picture',
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 16),
