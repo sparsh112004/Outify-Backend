@@ -124,8 +124,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
           if (department != null) 'department': department,
           if (roomNumber != null) 'room_number': roomNumber,
           if (gender != null) 'gender': gender,
-          'profile_pic': await MultipartFile.fromFile(
-            profileImage.path,
+          'profile_pic': MultipartFile.fromBytes(
+            await profileImage.readAsBytes(),
             filename: profileImage.name,
           ),
         });
