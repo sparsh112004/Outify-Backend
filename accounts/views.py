@@ -81,7 +81,9 @@ class MeView(APIView):
             user.room_number = serializer.validated_data['room_number']
         if 'gender' in serializer.validated_data:
             user.gender = serializer.validated_data['gender']
-        user.save(update_fields=['department', 'room_number', 'gender'])
+        if 'profile_pic' in serializer.validated_data:
+            user.profile_pic = serializer.validated_data['profile_pic']
+        user.save(update_fields=['department', 'room_number', 'gender', 'profile_pic'])
         return Response(UserMeSerializer(user).data, status=status.HTTP_200_OK)
 
 

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../models/user.dart';
 import '../services/api_service.dart';
@@ -112,13 +113,29 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = AuthState.initial();
   }
 
-  Future<void> updateProfile({String? department, String? roomNumber, String? gender}) async {
+  Future<void> updateProfile({String? department, String? roomNumber, String? gender, XFile? profileImage}) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final data = <String, dynamic>{};
-      if (department != null) data['department'] = department;
-      if (roomNumber != null) data['room_number'] = roomNumber;
-      if (gender != null) data['gender'] = gender;
+      dynamic data;
+      
+      if (profileImage != null) {
+        // Multipart upload
+        data = FormData.fromMap({
+          if (department != null) 'department': department,
+          if (roomNumber != null) 'room_number': roomNumber,
+          if (gender != null) 'gender': gender,
+          'profile_pic': await MultipartFile.fromFile(
+            profileImage.path,
+            filename: profileImage.name,
+          ),
+        });
+      } else {
+        // Regular JSON
+        data = <String, dynamic>{};
+        if (department != null) data['department'] = department;
+        if (roomNumber != null) data['room_number'] = roomNumber;
+        if (gender != null) data['gender'] = gender;
+      }
       
       final res = await ApiService.dio.patch('auth/me/', data: data);
       final user = AppUser.fromJson(res.data as Map<String, dynamic>);

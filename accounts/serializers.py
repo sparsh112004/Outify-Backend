@@ -10,7 +10,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'password', 'college_id', 'department', 'gender', 'room_number', 'profile_pic_url']
+        fields = ['id', 'name', 'email', 'password', 'college_id', 'department', 'gender', 'room_number', 'profile_pic']
 
     def create(self, validated_data):
         password = validated_data.pop('password')
@@ -37,13 +37,14 @@ class UserMeSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'role', 'college_id', 'department', 'gender', 'room_number', 'fcm_token', 'profile_pic_url', 'created_at']
+        fields = ['id', 'name', 'email', 'role', 'college_id', 'department', 'gender', 'room_number', 'fcm_token', 'profile_pic', 'created_at']
 
 
 class UserProfileUpdateSerializer(serializers.Serializer):
     department = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     room_number = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     gender = serializers.ChoiceField(choices=User.Gender.choices, required=False, allow_blank=True, allow_null=True)
+    profile_pic = serializers.ImageField(required=False, allow_null=True)
 
 
 class UpdateFcmTokenSerializer(serializers.Serializer):

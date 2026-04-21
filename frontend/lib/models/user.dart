@@ -34,7 +34,7 @@ class AppUser {
       gender: json['gender'] as String?,
       roomNumber: json['room_number'] as String?,
       fcmToken: json['fcm_token'] as String?,
-      profilePicUrl: json['profile_pic_url'] as String?,
+      profilePicUrl: json['profile_pic'] as String?,
     );
   }
 
@@ -49,7 +49,7 @@ class AppUser {
       'gender': gender,
       'room_number': roomNumber,
       'fcm_token': fcmToken,
-      'profile_pic_url': profilePicUrl,
+      'profile_pic': profilePicUrl,
     };
   }
 }
