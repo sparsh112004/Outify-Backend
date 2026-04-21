@@ -53,12 +53,34 @@ class AuthNotifier extends StateNotifier<AuthState> {
       print('DEBUG: Login successful for ${user.email}, state updated');
     } catch (e) {
       print('DEBUG: Login error: $e');
-      String errorMsg = e.toString();
-      if (e is DioException) {
-        errorMsg = e.response?.data?.toString() ?? e.message ?? e.toString();
-      }
-      state = state.copyWith(isLoading: false, error: errorMsg);
+      state = state.copyWith(isLoading: false, error: _parseError(e));
     }
+  }
+
+  String _parseError(dynamic e) {
+    if (e is DioException) {
+      final data = e.response?.data;
+      if (data is Map) {
+        if (data.containsKey('non_field_errors') && data['non_field_errors'] is List) {
+          return (data['non_field_errors'] as List).join(', ');
+        }
+        if (data.containsKey('detail')) {
+          return data['detail'].toString();
+        }
+        if (data.containsKey('error')) {
+          return data['error'].toString();
+        }
+        // Handle field-specific errors (e.g., {"email": ["message"]})
+        final fields = data.keys.where((k) => data[k] is List).toList();
+        if (fields.isNotEmpty) {
+          final firstField = fields.first;
+          final messages = data[firstField] as List;
+          return '$firstField: ${messages.join(", ")}';
+        }
+      }
+      return e.message ?? e.toString();
+    }
+    return e.toString();
   }
 
   Future<void> registerStudent({required String name, required String email, required String password, String? collegeId, String? department, String? gender}) async {
@@ -81,7 +103,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
       state = state.copyWith(isLoading: false, user: user);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _parseError(e));
     }
   }
 
