@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -127,6 +128,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
           'profile_pic': MultipartFile.fromBytes(
             await profileImage.readAsBytes(),
             filename: profileImage.name,
+            contentType: MediaType(
+              'image',
+              profileImage.name.split('.').last.toLowerCase() == 'png' ? 'png' : 'jpeg',
+            ),
           ),
         });
       } else {
