@@ -56,7 +56,7 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   Future<void> _cancelRequest() async {
     setState(() => _loading = true);
     try {
-      await ApiService.dio.post('/requests/${widget.requestId}/cancel');
+      await ApiService.dio.post('/requests/${widget.requestId}/cancel/');
       await _load();
     } catch (e) {
       if (!mounted) return;
