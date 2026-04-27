@@ -44,8 +44,8 @@ class StudentCreateOutingView(APIView):
         elif needs_approval:
             # Requires parent to click the magic link
             outing.overall_status = OutingRequest.OverallStatus.PENDING_PARENT
-            approval_url = f"http://localhost:8000/api/requests/{outing.id}/parent-approve"
-            denial_url = f"http://localhost:8000/api/requests/{outing.id}/parent-deny"
+            approval_url = request.build_absolute_uri(f"/api/requests/{outing.id}/parent-approve")
+            denial_url = request.build_absolute_uri(f"/api/requests/{outing.id}/parent-deny")
             print("\n" + "="*50)
             print(f"APPROVAL REQUEST TO PARENT ({outing.student.parent_email})")
             print(f"Subject: Outing Approval Request for {outing.student.name}")

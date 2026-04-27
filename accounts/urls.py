@@ -8,7 +8,6 @@ from accounts.views import (
     LoginView,
     MeView,
     RegisterView,
-    RegisterView,
     AdminUpdateUserView,
     DepartmentListView,
     AdminDepartmentView,

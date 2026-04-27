@@ -82,7 +82,10 @@ def send_return_reminders_strict():
         end = start + timedelta(minutes=1)
 
         qs = OutingRequest.objects.select_related('student').filter(
-            overall_status=OutingRequest.OverallStatus.APPROVED,
+            overall_status__in=[
+                OutingRequest.OverallStatus.APPROVED,
+                OutingRequest.OverallStatus.OUT
+            ],
             actual_return_time__isnull=True,
             expected_return_datetime__gte=start,
             expected_return_datetime__lt=end,
