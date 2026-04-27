@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/outing_request.dart';
 import '../models/user.dart';
@@ -51,10 +52,25 @@ class RequestsNotifier extends StateNotifier<RequestsState> {
       state = state.copyWith(isLoading: false, currentRequest: outing);
       return outing;
     } catch (e, st) {
-      state = state.copyWith(isLoading: false, error: 'Fetch Error: $e');
+      state = state.copyWith(isLoading: false, error: _parseError(e));
       print('fetchRequestDetails ERROR: $e\n$st');
       return null;
     }
+  }
+
+  String _parseError(dynamic e) {
+    if (e is DioException) {
+      if (e.response?.statusCode == 401) {
+        return 'Session expired. Please log in again.';
+      }
+      final data = e.response?.data;
+      if (data is Map) {
+        if (data.containsKey('detail')) return data['detail'].toString();
+        if (data.containsKey('error')) return data['error'].toString();
+      }
+      return e.message ?? 'A network error occurred. Please check your connection.';
+    }
+    return e.toString();
   }
 
   Future<void> fetchStudentRequests() async {
@@ -65,7 +81,7 @@ class RequestsNotifier extends StateNotifier<RequestsState> {
       final items = list.map(OutingRequest.fromJson).toList();
       state = state.copyWith(isLoading: false, items: items);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _parseError(e));
     }
   }
 
@@ -79,7 +95,7 @@ class RequestsNotifier extends StateNotifier<RequestsState> {
       final faculties = list.map(AppUser.fromJson).toList();
       state = state.copyWith(isLoading: false, faculties: faculties);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _parseError(e));
     }
   }
 
@@ -96,8 +112,8 @@ class RequestsNotifier extends StateNotifier<RequestsState> {
     try {
       final data = <String, dynamic>{
         'reason': reason,
-        'departure_datetime': departure.toIso8601String(),
-        'expected_return_datetime': expectedReturn.toIso8601String(),
+        'departure_datetime': departure.toUtc().toIso8601String(),
+        'expected_return_datetime': expectedReturn.toUtc().toIso8601String(),
         'destination': destination,
         'faculty': facultyId,
         'department': department,
@@ -108,7 +124,7 @@ class RequestsNotifier extends StateNotifier<RequestsState> {
       await ApiService.dio.post('requests/', data: data);
       await fetchStudentRequests();
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _parseError(e));
     }
   }
 
@@ -120,7 +136,7 @@ class RequestsNotifier extends StateNotifier<RequestsState> {
       final items = list.map(OutingRequest.fromJson).toList();
       state = state.copyWith(isLoading: false, items: items);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _parseError(e));
     }
   }
 
@@ -133,7 +149,7 @@ class RequestsNotifier extends StateNotifier<RequestsState> {
       });
       await fetchFacultyPending();
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _parseError(e));
     }
   }
 
@@ -145,7 +161,7 @@ class RequestsNotifier extends StateNotifier<RequestsState> {
       final items = list.map(OutingRequest.fromJson).toList();
       state = state.copyWith(isLoading: false, items: items);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _parseError(e));
     }
   }
 
@@ -168,7 +184,7 @@ class RequestsNotifier extends StateNotifier<RequestsState> {
       });
       await fetchWardenPending();
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _parseError(e));
     }
   }
 
@@ -199,15 +215,16 @@ class RequestsNotifier extends StateNotifier<RequestsState> {
     }
   }
 
-  Future<void> securityVerify({required int requestId, required String action}) async {
+  Future<void> securityVerify({required int requestId, required String action, String? remarks}) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
       await ApiService.dio.post('requests/security/$requestId/verify/', data: {
         'action': action,
+        if (remarks != null && remarks.isNotEmpty) 'remarks': remarks,
       });
       await fetchSecurityToday();
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, error: _parseError(e));
     }
   }
 }

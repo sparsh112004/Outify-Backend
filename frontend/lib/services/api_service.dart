@@ -34,6 +34,16 @@ class ApiService {
           }
           handler.next(options);
         },
+        onError: (e, handler) {
+          if (e.response?.statusCode == 401) {
+            print('API_LOG: Unauthorized (401) detected. Clearing session.');
+            LocalStorage.clearAuth();
+            // We don't have easy access to AuthNotifier here, but clearing storage
+            // will cause the app to show the login screen on the next cold build
+            // or when AuthNotifier next checks its state.
+          }
+          handler.next(e);
+        },
       ),
     );
 

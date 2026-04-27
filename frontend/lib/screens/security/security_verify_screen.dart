@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../models/outing_request.dart';
 import '../../providers/requests_provider.dart';
 import '../../utils/theme.dart';
@@ -13,6 +14,8 @@ class SecurityVerifyScreen extends ConsumerStatefulWidget {
 }
 
 class _SecurityVerifyScreenState extends ConsumerState<SecurityVerifyScreen> {
+  final TextEditingController _remarksController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -22,11 +25,34 @@ class _SecurityVerifyScreenState extends ConsumerState<SecurityVerifyScreen> {
   }
 
   @override
+  void dispose() {
+    _remarksController.dispose();
+    super.dispose();
+  }
+
+  bool _isLate(DateTime? expectedReturn) {
+    if (expectedReturn == null) return false;
+    return DateTime.now().isAfter(expectedReturn);
+  }
+
+  String _getLatenessText(DateTime expectedReturn) {
+    final diff = DateTime.now().difference(expectedReturn);
+    if (diff.isNegative) return '';
+    
+    if (diff.inHours > 0) {
+      return '${diff.inHours}h ${diff.inMinutes % 60}m overdue';
+    } else {
+      return '${diff.inMinutes}m overdue';
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final state = ref.watch(requestsProvider);
     final request = state.currentRequest;
     final isOut = request?.overallStatus == 'out';
     final isApproved = request?.overallStatus == 'approved';
+    final bool late = isOut && request != null && _isLate(request.expectedReturnDatetime);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Gate Verification')),
@@ -88,9 +114,56 @@ class _SecurityVerifyScreenState extends ConsumerState<SecurityVerifyScreen> {
                     Text('Reason: ${request.reason}', style: const TextStyle(fontSize: 16, color: Colors.grey)),
                     const Divider(height: 32),
                     _InfoRow(label: 'Status', value: request.overallStatus.toUpperCase().replaceAll('_', ' ')),
+                    _InfoRow(label: 'Exp. Return', value: DateFormat('MMM d, hh:mm a').format(request.expectedReturnDatetime)),
                     _InfoRow(label: 'Destination', value: request.destination ?? 'Not specified'),
                   ],
                 ),
+              ),
+              if (late) ...[
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade600,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [BoxShadow(color: Colors.red.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 28),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'LATE RETURN WARNING',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                            Text(
+                              _getLatenessText(request.expectedReturnDatetime),
+                              style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 13),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 24),
+              // Remarks Field (Focus on lateness reason)
+              TextField(
+                controller: _remarksController,
+                decoration: InputDecoration(
+                  labelText: late ? 'Reason for Lateness' : 'Security Remarks (Optional)',
+                  hintText: late ? 'Ask student for reason of delay...' : 'Enter any notes...',
+                  prefixIcon: Icon(late ? Icons.edit_note_rounded : Icons.notes_rounded),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                  filled: true,
+                  fillColor: late ? Colors.red.withOpacity(0.05) : null,
+                ),
+                maxLines: 2,
               ),
               const SizedBox(height: 32),
               if (isApproved)
@@ -98,7 +171,11 @@ class _SecurityVerifyScreenState extends ConsumerState<SecurityVerifyScreen> {
                   onPressed: state.isLoading
                       ? null
                       : () async {
-                          await ref.read(requestsProvider.notifier).securityVerify(requestId: widget.requestId, action: 'exit');
+                          await ref.read(requestsProvider.notifier).securityVerify(
+                                requestId: widget.requestId,
+                                action: 'exit',
+                                remarks: _remarksController.text,
+                              );
                           if (mounted) Navigator.pop(context);
                         },
                   icon: const Icon(Icons.check_circle_outline),
@@ -114,13 +191,17 @@ class _SecurityVerifyScreenState extends ConsumerState<SecurityVerifyScreen> {
                   onPressed: state.isLoading
                       ? null
                       : () async {
-                          await ref.read(requestsProvider.notifier).securityVerify(requestId: widget.requestId, action: 'entry');
+                          await ref.read(requestsProvider.notifier).securityVerify(
+                                requestId: widget.requestId,
+                                action: 'entry',
+                                remarks: _remarksController.text,
+                              );
                           if (mounted) Navigator.pop(context);
                         },
                   icon: const Icon(Icons.home_outlined),
-                  label: const Text('VERIFY ENTRY (Student Returned)'),
+                  label: Text(late ? 'VERIFY LATE ENTRY' : 'VERIFY ENTRY (Student Returned)'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: Colors.orange,
+                    backgroundColor: late ? Colors.deepOrange : Colors.orange,
                     padding: const EdgeInsets.symmetric(vertical: 20),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),

@@ -38,7 +38,7 @@ class MyApp extends ConsumerWidget {
     print('DEBUG: MyApp build - auth.user: ${auth.user?.email}, role: ${auth.user?.role}');
 
     return MaterialApp(
-      title: 'Outing Management',
+      title: 'OutEase',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

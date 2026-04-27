@@ -1,19 +1,23 @@
+from django.db.models import F
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from accounts.models import User
-from accounts.permissions import IsAdmin
+from accounts.models import Department, User
+from accounts.permissions import IsAdmin, IsFaculty, IsSecurity, IsStudent, IsWarden
 from accounts.serializers import (
     AdminCreateUserSerializer,
+    AdminUpdateUserSerializer,
     LoginSerializer,
     RegisterSerializer,
     UpdateFcmTokenSerializer,
     UserMeSerializer,
     UserProfileUpdateSerializer,
 )
+from outings.models import OutingRequest
 
 
 class RegisterView(APIView):
@@ -63,7 +67,7 @@ class FcmTokenView(APIView):
 
 class MeView(APIView):
     def get(self, request):
-        return Response(UserMeSerializer(request.user).data, status=status.HTTP_200_OK)
+        return Response(UserMeSerializer(request.user, context={'request': request}).data, status=status.HTTP_200_OK)
 
     def patch(self, request):
         serializer = UserProfileUpdateSerializer(data=request.data)
@@ -84,7 +88,7 @@ class MeView(APIView):
         if 'profile_pic' in serializer.validated_data:
             user.profile_pic = serializer.validated_data['profile_pic']
         user.save(update_fields=['department', 'room_number', 'gender', 'profile_pic'])
-        return Response(UserMeSerializer(user).data, status=status.HTTP_200_OK)
+        return Response(UserMeSerializer(user, context={'request': request}).data, status=status.HTTP_200_OK)
 
 
 class FacultyListView(APIView):
@@ -212,3 +216,29 @@ class AdminDepartmentView(APIView):
             return Response({'id': dept.id, 'name': dept.name}, status=status.HTTP_200_OK)
         except Department.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+class AdminDashboardStatsView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        now = timezone.now()
+        today = now.date()
+        
+        return Response({
+            'total_users': User.objects.all().count(),
+            'total_students': User.objects.filter(role=User.Role.STUDENT).count(),
+            'students_out': OutingRequest.objects.filter(overall_status=OutingRequest.OverallStatus.OUT).count(),
+            'pending_approvals': OutingRequest.objects.filter(
+                overall_status__in=[
+                    OutingRequest.OverallStatus.PENDING_FACULTY,
+                    OutingRequest.OverallStatus.PENDING_WARDEN,
+                    OutingRequest.OverallStatus.PENDING_PARENT
+                ]
+            ).count(),
+            'today_requests': OutingRequest.objects.filter(created_at__date=today).count(),
+            'late_returns_today': OutingRequest.objects.filter(
+                overall_status=OutingRequest.OverallStatus.COMPLETED,
+                actual_return_time__date=today,
+                actual_return_time__gt=F('expected_return_datetime')
+            ).count(),
+        })

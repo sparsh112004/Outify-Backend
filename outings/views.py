@@ -1,11 +1,12 @@
 from django.db import transaction
+from django.db.models import F, Q
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.permissions import IsFaculty, IsSecurity, IsStudent, IsWarden
+from accounts.permissions import IsAdmin, IsFaculty, IsSecurity, IsStudent, IsWarden
 from auditlog.models import Log
 from outings.models import OutingRequest
 from outings.serializers import (
@@ -241,6 +242,7 @@ class SecurityVerifyView(APIView):
         serializer = SecurityVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         action = serializer.validated_data['action']
+        remarks = serializer.validated_data.get('remarks')
 
         with transaction.atomic():
             try:
@@ -262,11 +264,15 @@ class SecurityVerifyView(APIView):
             if action == 'exit':
                 outing.actual_departure_time = now
                 outing.overall_status = OutingRequest.OverallStatus.OUT
-                outing.save(update_fields=['security', 'actual_departure_time', 'overall_status', 'updated_at'])
+                if remarks:
+                    outing.security_remarks = remarks
+                outing.save(update_fields=['security', 'actual_departure_time', 'overall_status', 'updated_at', 'security_remarks'])
             else:
                 outing.actual_return_time = now
                 outing.overall_status = OutingRequest.OverallStatus.COMPLETED
-                outing.save(update_fields=['security', 'actual_return_time', 'overall_status', 'updated_at'])
+                if remarks:
+                    outing.security_remarks = remarks
+                outing.save(update_fields=['security', 'actual_return_time', 'overall_status', 'updated_at', 'security_remarks'])
 
         if action == 'exit':
             _log(request.user, 'security_exit_verified', {'outing_request_id': outing.id})
@@ -325,3 +331,34 @@ class StudentCancelOutingView(APIView):
 
         _log(request.user, 'outing_cancelled', {'outing_request_id': outing.id})
         return Response(OutingRequestDetailSerializer(outing).data, status=status.HTTP_200_OK)
+
+class AdminOutingsListView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        status_filter = request.query_params.get('status')
+        date_filter = request.query_params.get('date')
+        
+        qs = OutingRequest.objects.all().order_by('-created_at')
+        
+        if status_filter == 'out':
+            qs = qs.filter(overall_status=OutingRequest.OverallStatus.OUT)
+        elif status_filter == 'pending':
+            qs = qs.filter(overall_status__in=[
+                OutingRequest.OverallStatus.PENDING_PARENT,
+                OutingRequest.OverallStatus.PENDING_FACULTY,
+                OutingRequest.OverallStatus.PENDING_WARDEN,
+            ])
+        elif status_filter == 'approved':
+             qs = qs.filter(overall_status=OutingRequest.OverallStatus.APPROVED)
+        elif status_filter == 'late':
+             # Late return: returned (completed) and actual > expected
+             qs = qs.filter(
+                 overall_status=OutingRequest.OverallStatus.COMPLETED,
+                 actual_return_time__gt=F('expected_return_datetime')
+             )
+
+        if date_filter == 'today':
+            qs = qs.filter(created_at__date=timezone.now().date())
+            
+        return Response(OutingRequestListSerializer(qs, many=True).data, status=status.HTTP_200_OK)

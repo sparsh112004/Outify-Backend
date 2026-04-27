@@ -1,3 +1,5 @@
+import '../utils/constants.dart';
+
 class AppUser {
   final int id;
   final String name;
@@ -34,7 +36,11 @@ class AppUser {
       gender: json['gender'] as String?,
       roomNumber: json['room_number'] as String?,
       fcmToken: json['fcm_token'] as String?,
-      profilePicUrl: json['profile_pic'] as String?,
+      profilePicUrl: json['profile_pic'] != null
+          ? (json['profile_pic'].toString().startsWith('http')
+              ? json['profile_pic'].toString()
+              : '${AppConstants.apiBaseUrl.split('/api/')[0]}${json['profile_pic']}')
+          : null,
     );
   }
 

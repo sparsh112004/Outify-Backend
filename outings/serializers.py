@@ -123,3 +123,4 @@ class WardenDecisionSerializer(serializers.Serializer):
 
 class SecurityVerifySerializer(serializers.Serializer):
     action = serializers.ChoiceField(choices=['exit', 'entry'])
+    remarks = serializers.CharField(required=False, allow_blank=True, allow_null=True)

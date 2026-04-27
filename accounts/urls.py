@@ -12,6 +12,7 @@ from accounts.views import (
     AdminUpdateUserView,
     DepartmentListView,
     AdminDepartmentView,
+    AdminDashboardStatsView,
 )
 
 urlpatterns = [
@@ -26,4 +27,5 @@ urlpatterns = [
     path('departments/', DepartmentListView.as_view(), name='department-list'),
     path('admin/departments/', AdminDepartmentView.as_view(), name='admin-department-create'),
     path('admin/departments/<int:pk>/', AdminDepartmentView.as_view(), name='admin-department-update'),
+    path('admin/dashboard/stats/', AdminDashboardStatsView.as_view(), name='admin-dashboard-stats'),
 ]

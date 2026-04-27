@@ -44,6 +44,7 @@ class OutingRequest(models.Model):
     security = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='security_verified_outings')
     actual_departure_time = models.DateTimeField(null=True, blank=True)
     actual_return_time = models.DateTimeField(null=True, blank=True)
+    security_remarks = models.TextField(null=True, blank=True)
 
     overall_status = models.CharField(max_length=30, choices=OverallStatus.choices, default=OverallStatus.PENDING_PARENT)
 

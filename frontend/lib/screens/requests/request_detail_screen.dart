@@ -166,10 +166,10 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
 
   Widget _buildDetailsCard() {
     final dep = _data?['departure_datetime'] != null 
-        ? DateFormat('MMM dd, hh:mm a').format(DateTime.parse(_data?['departure_datetime']))
+        ? DateFormat('MMM dd, hh:mm a').format(DateTime.parse(_data?['departure_datetime']).toLocal())
         : '-';
     final ret = _data?['expected_return_datetime'] != null 
-        ? DateFormat('MMM dd, hh:mm a').format(DateTime.parse(_data?['expected_return_datetime']))
+        ? DateFormat('MMM dd, hh:mm a').format(DateTime.parse(_data?['expected_return_datetime']).toLocal())
         : '-';
 
     return Card(
@@ -186,12 +186,12 @@ class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
             if (_data?['actual_departure_time'] != null) ...[
               const Divider(),
               _buildDetailRow(Icons.exit_to_app, 'Actual Departure', 
-                DateFormat('MMM dd, hh:mm a').format(DateTime.parse(_data?['actual_departure_time']))),
+                DateFormat('MMM dd, hh:mm a').format(DateTime.parse(_data?['actual_departure_time']).toLocal())),
             ],
             if (_data?['actual_return_time'] != null) ...[
               const Divider(),
               _buildDetailRow(Icons.home_outlined, 'Actual Return', 
-                DateFormat('MMM dd, hh:mm a').format(DateTime.parse(_data?['actual_return_time']))),
+                DateFormat('MMM dd, hh:mm a').format(DateTime.parse(_data?['actual_return_time']).toLocal())),
             ],
           ],
         ),

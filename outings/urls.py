@@ -13,6 +13,7 @@ from outings.views import (
     WardenPendingListView,
     ParentDecideView,
     SecurityScanLookupView,
+    AdminOutingsListView,
 )
 
 urlpatterns = [
@@ -34,4 +35,5 @@ urlpatterns = [
     path('requests/<int:pk>/', OutingDetailView.as_view(), name='detail'),
     path('requests/<int:pk>/cancel/', StudentCancelOutingView.as_view(), name='student-cancel'),
     path('requests/<int:pk>/parent-<str:action>/', ParentDecideView.as_view(), name='parent-decide'),
+    path('admin/outings/', AdminOutingsListView.as_view(), name='admin-outings'),
 ]

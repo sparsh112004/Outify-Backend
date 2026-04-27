@@ -9,6 +9,9 @@ class OutingRequest {
   final String overallStatus;
   final String facultyStatus;
   final String wardenStatus;
+  final String? securityRemarks;
+  final DateTime? actualDepartureTime;
+  final DateTime? actualReturnTime;
 
   const OutingRequest({
     required this.id,
@@ -20,6 +23,9 @@ class OutingRequest {
     required this.overallStatus,
     required this.facultyStatus,
     required this.wardenStatus,
+    this.securityRemarks,
+    this.actualDepartureTime,
+    this.actualReturnTime,
   });
 
   factory OutingRequest.fromJson(Map<String, dynamic> json) {
@@ -33,14 +39,24 @@ class OutingRequest {
       print('OUTING_DEBUG: reason parsed');
       
       final departure = json['departure_datetime'] != null 
-          ? DateTime.parse(json['departure_datetime'].toString()) 
+          ? DateTime.parse(json['departure_datetime'].toString()).toLocal() 
           : DateTime.now();
       print('OUTING_DEBUG: departure parsed: $departure');
       
       final expectedReturn = json['expected_return_datetime'] != null 
-          ? DateTime.parse(json['expected_return_datetime'].toString()) 
+          ? DateTime.parse(json['expected_return_datetime'].toString()).toLocal() 
           : DateTime.now();
       print('OUTING_DEBUG: expectedReturn parsed: $expectedReturn');
+      
+      final actualDeparture = json['actual_departure_time'] != null
+          ? DateTime.parse(json['actual_departure_time'].toString()).toLocal()
+          : null;
+      print('OUTING_DEBUG: actualDeparture parsed: $actualDeparture');
+
+      final actualReturn = json['actual_return_time'] != null
+          ? DateTime.parse(json['actual_return_time'].toString()).toLocal()
+          : null;
+      print('OUTING_DEBUG: actualReturn parsed: $actualReturn');
       
       final destination = json['destination']?.toString();
       print('OUTING_DEBUG: destination parsed');
@@ -57,6 +73,8 @@ class OutingRequest {
       
       final wardenStatus = (json['warden_status'] ?? 'unknown').toString();
       print('OUTING_DEBUG: wardenStatus parsed');
+      
+      final securityRemarks = json['security_remarks']?.toString();
 
       return OutingRequest(
         id: id,
@@ -68,6 +86,9 @@ class OutingRequest {
         overallStatus: overallStatus,
         facultyStatus: facultyStatus,
         wardenStatus: wardenStatus,
+        securityRemarks: securityRemarks,
+        actualDepartureTime: actualDeparture,
+        actualReturnTime: actualReturn,
       );
     } catch (e, st) {
       print('CRITICAL JSON PARSE ERROR in OutingRequest: $e\nData: $json\n$st');
