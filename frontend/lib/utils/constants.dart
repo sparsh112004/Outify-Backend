@@ -1,6 +1,10 @@
+import 'package:flutter/foundation.dart';
+
 class AppConstants {
-  // Replace with your Railway public URL (e.g., https://your-project.up.railway.app/api)
-  static const String apiBaseUrl = 'http://localhost:8000/api/';
+  static const String localApiUrl = 'http://localhost:8000/api/';
+  static const String productionApiUrl = 'https://outify-backend-production.up.railway.app/api/';
+
+  static String get apiBaseUrl => kReleaseMode ? productionApiUrl : localApiUrl;
 
   static const String hiveBox = 'app_box';
   static const String hiveKeyAccessToken = 'access_token';

@@ -39,7 +39,7 @@ class Command(BaseCommand):
         if not User.objects.filter(email='eg1faculty@outing.local').exists():
             User.objects.create_user(
                 email='eg1faculty@outing.local',
-                password='FacultyPass123!',
+                password='eg1FacultyPass123!',
                 name='Dr. Rajesh Kumar',
                 role='faculty',
                 department=eng_dept,
@@ -50,7 +50,7 @@ class Command(BaseCommand):
         if not User.objects.filter(email='mg1faculty@outing.local').exists():
             User.objects.create_user(
                 email='mg1faculty@outing.local',
-                password='FacultyPass123!',
+                password='mg1FacultyPass123!',
                 name='Dr. Priya Sharma',
                 role='faculty',
                 department=mgt_dept,
