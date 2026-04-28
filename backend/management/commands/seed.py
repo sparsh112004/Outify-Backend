@@ -36,59 +36,69 @@ class Command(BaseCommand):
             )
 
         # Engineering Faculty
-        if not User.objects.filter(email='eg1faculty@outing.local').exists():
-            User.objects.create_user(
-                email='eg1faculty@outing.local',
-                password='eg1FacultyPass123!',
-                name='Dr. Rajesh Kumar',
-                role='faculty',
-                department=eng_dept,
-                gender='male',
-            )
+        user_eg, created = User.objects.get_or_create(
+            email='eg1faculty@outing.local',
+            defaults={
+                'name': 'Dr. Rajesh Kumar',
+                'role': 'faculty',
+                'department': eng_dept,
+                'gender': 'male',
+            }
+        )
+        user_eg.set_password('eg1FacultyPass123!')
+        user_eg.save()
 
         # Management Faculty
-        if not User.objects.filter(email='mg1faculty@outing.local').exists():
-            User.objects.create_user(
-                email='mg1faculty@outing.local',
-                password='mg1FacultyPass123!',
-                name='Dr. Priya Sharma',
-                role='faculty',
-                department=mgt_dept,
-                gender='female',
-            )
+        user_mg, created = User.objects.get_or_create(
+            email='mg1faculty@outing.local',
+            defaults={
+                'name': 'Dr. Priya Sharma',
+                'role': 'faculty',
+                'department': mgt_dept,
+                'gender': 'female',
+            }
+        )
+        user_mg.set_password('mg1FacultyPass123!')
+        user_mg.save()
 
         # Warden
-        if not User.objects.filter(email='warden@outing.local').exists():
-            User.objects.create_user(
-                email='warden@outing.local',
-                password='WardenPass123!',
-                name='Bob Warden',
-                role='warden',
-                gender='male',
-            )
+        user_w, created = User.objects.get_or_create(
+            email='warden@outing.local',
+            defaults={
+                'name': 'Bob Warden',
+                'role': 'warden',
+                'gender': 'male',
+            }
+        )
+        user_w.set_password('WardenPass123!')
+        user_w.save()
 
         # Security
-        if not User.objects.filter(email='security@outing.local').exists():
-            User.objects.create_user(
-                email='security@outing.local',
-                password='SecurityPass123!',
-                name='Carol Security',
-                role='security',
-                gender='female',
-            )
+        user_s, created = User.objects.get_or_create(
+            email='security@outing.local',
+            defaults={
+                'name': 'Carol Security',
+                'role': 'security',
+                'gender': 'female',
+            }
+        )
+        user_s.set_password('SecurityPass123!')
+        user_s.save()
 
         # Sample Student
-        if not User.objects.filter(email='student@outing.local').exists():
-            User.objects.create_user(
-                email='student@outing.local',
-                password='StudentPass123!',
-                name='Dave Student',
-                role='student',
-                college_id='STU001',
-                room_number='A101',
-                department=eng_dept,
-                parent_email='parent@outing.local',
-                gender='male',
-            )
+        user_stu, created = User.objects.get_or_create(
+            email='student@outing.local',
+            defaults={
+                'name': 'Dave Student',
+                'role': 'student',
+                'college_id': 'STU001',
+                'room_number': 'A101',
+                'department': eng_dept,
+                'parent_email': 'parent@outing.local',
+                'gender': 'male',
+            }
+        )
+        user_stu.set_password('StudentPass123!')
+        user_stu.save()
 
         self.stdout.write(self.style.SUCCESS('Seed complete.'))
